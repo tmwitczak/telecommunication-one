@@ -20,7 +20,8 @@ inline BinaryVector convertByteToBinaryVector(unsigned char b) {
     return vector;
 }
 
-BinaryVector multiplyMatrixByVector(const BinaryMatrix &matrix, const BinaryVector &vector) {
+BinaryVector multiplyMatrixByVector(const BinaryMatrix &matrix,
+                                    const BinaryVector &vector) {
     BinaryVector result;
     for (BinaryVector row : matrix) {
         bool rowResult = 0;
