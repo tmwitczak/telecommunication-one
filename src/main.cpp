@@ -1,13 +1,17 @@
+/////////////////////////////////////////////////////////////////////// Includes
 #include <fstream>
 #include <iostream>
 #include <vector>
 
+///////////////////////////////////////////////////////////////////// Namespaces
 using namespace std;
 
+/////////////////////////////////////////////////////////////////////// Typedefs
 typedef std::vector<bool> BinaryVector;
 typedef std::vector<std::vector<bool>> BinaryMatrix;
 typedef std::vector<unsigned char> ByteVector;
 
+////////////////////////////////////////////////////////////////////// Functions
 inline BinaryVector convertByteToBinaryVector(unsigned char b) {
     BinaryVector vector;
     for (int i = 0; i < 8; i++) {
@@ -66,6 +70,7 @@ ByteVector codeBytes(const ByteVector &bytes, const BinaryMatrix &matrix) {
     return outputInBytes;
 }
 
+/////////////////////////////////////////////////////////////////////////// Main
 int main() {
 
     vector<std::vector<bool>> H1 =
@@ -103,3 +108,5 @@ int main() {
 
     file.close();
 }
+
+////////////////////////////////////////////////////////////////////////////////
