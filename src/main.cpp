@@ -26,7 +26,7 @@ BinaryVector multiplyMatrixByVector(const BinaryMatrix &matrix,
     for (BinaryVector row : matrix) {
         bool rowResult = 0;
         for (int i = 0; i < row.size(); i++) {
-            rowResult = rowResult^(row[i] & vector[i]);
+            rowResult = rowResult ^ (row[i] & vector[i]);
         }
         result.push_back(rowResult);
     }
