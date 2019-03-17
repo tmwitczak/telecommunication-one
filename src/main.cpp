@@ -7,12 +7,13 @@
 using namespace std;
 
 /////////////////////////////////////////////////////////////////////// Typedefs
-typedef std::vector<bool> BinaryVector;
-typedef std::vector<std::vector<bool>> BinaryMatrix;
-typedef std::vector<unsigned char> ByteVector;
+typedef unsigned char        Byte;
+typedef vector<bool>         BinaryVector;
+typedef vector<BinaryVector> BinaryMatrix;
+typedef vector<Byte>         ByteVector;
 
 ////////////////////////////////////////////////////////////////////// Functions
-inline BinaryVector convertByteToBinaryVector(unsigned char b) {
+inline BinaryVector convertByteToBinaryVector(Byte b) {
     BinaryVector vector;
     for (int i = 0; i < 8; i++) {
         vector.push_back(b & (1 << (7 - i)));
@@ -48,13 +49,13 @@ ByteVector codeBytes(const ByteVector &bytes, const BinaryMatrix &matrix) {
     ByteVector outputInBytes;
     BinaryVector outputInBits;
     //code bytes to outputInBits
-    for (unsigned char b : bytes) {
+    for (Byte b : bytes) {
         BinaryVector encoded = codeWord(convertByteToBinaryVector(b), matrix);
         outputInBits.insert(outputInBits.end(), encoded.begin(), encoded.end());
     }
     //convert outputInBits to outputInBytes
     int counter = 0;
-    unsigned char buffer = 0;
+    Byte buffer = 0;
     for (bool b : outputInBits) {
         buffer += b;
         if (counter == 7) {
@@ -74,7 +75,7 @@ ByteVector codeBytes(const ByteVector &bytes, const BinaryMatrix &matrix) {
 /////////////////////////////////////////////////////////////////////////// Main
 int main() {
 
-    vector<std::vector<bool>> H1 =
+    vector<vector<bool>> H1 =
             {
                     {1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0},
                     {1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0},
@@ -86,22 +87,22 @@ int main() {
     cout << "Enter filename of the file to encode: ";
     cin >> filename;
     ifstream file(filename, ios::binary);
-    vector<unsigned char> bytes;
+    vector<Byte> bytes;
     if (!file) {
         cout << "Wrong file" << endl;
         return 0;
     } else {
         while (file) {
-            auto b = static_cast<unsigned char>( file.get());
+            auto b = static_cast<Byte>( file.get());
             if (file)
                 bytes.push_back(b);
         }
     }
 
-    vector<unsigned char> encoded = codeBytes(bytes, H1);
+    vector<Byte> encoded = codeBytes(bytes, H1);
     string encodedFilename = "encoded-" + filename;
     ofstream os(encodedFilename, ios::binary);
-    for (unsigned char b : encoded) {
+    for (Byte b : encoded) {
         os.put(b);
         cout << b;
     }
