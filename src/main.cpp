@@ -1,114 +1,64 @@
 /////////////////////////////////////////////////////////////////////// Includes
+#include "BinaryFileEncoder.hpp"
+#include "CorrectionMatrix.hpp"
+
 #include <fstream>
 #include <iostream>
-#include <vector>
-
-///////////////////////////////////////////////////////////////////// Namespaces
-using namespace std;
-
-/////////////////////////////////////////////////////////////////////// Typedefs
-typedef unsigned char        Byte;
-typedef vector<bool>         BinaryVector;
-typedef vector<BinaryVector> BinaryMatrix;
-typedef vector<Byte>         ByteVector;
-
-////////////////////////////////////////////////////////////////////// Functions
-inline BinaryVector convertByteToBinaryVector(Byte b) {
-    BinaryVector vector;
-    for (int i = 0; i < 8; i++) {
-        vector.push_back(b & (1 << (7 - i)));
-    }
-    return vector;
-}
-
-BinaryVector multiplyMatrixByVector(const BinaryMatrix &matrix,
-                                    const BinaryVector &vector) {
-    BinaryVector result;
-    for (BinaryVector row : matrix) {
-        bool rowResult = 0;
-        for (int i = 0; i < row.size(); i++) {
-            rowResult = rowResult ^ (row[i] & vector[i]);
-        }
-        result.push_back(rowResult);
-    }
-    return result;
-}
-
-BinaryVector codeWord(const BinaryVector &word, const BinaryMatrix &matrix) {
-    int numberOfParityBits = matrix.size();
-    BinaryVector encoded(word);
-    encoded.insert(encoded.end(), numberOfParityBits, 0);
-    BinaryVector parityBits = multiplyMatrixByVector(matrix, encoded);
-    encoded.erase(encoded.end() - numberOfParityBits, encoded.end());
-    encoded.insert(encoded.end(), parityBits.begin(), parityBits.end());
-    return encoded;
-}
-
-ByteVector codeBytes(const ByteVector &bytes, const BinaryMatrix &matrix) {
-    //output vectors
-    ByteVector outputInBytes;
-    BinaryVector outputInBits;
-    //code bytes to outputInBits
-    for (Byte b : bytes) {
-        BinaryVector encoded = codeWord(convertByteToBinaryVector(b), matrix);
-        outputInBits.insert(outputInBits.end(), encoded.begin(), encoded.end());
-    }
-    //convert outputInBits to outputInBytes
-    int counter = 0;
-    Byte buffer = 0;
-    for (bool b : outputInBits) {
-        buffer += b;
-        if (counter == 7) {
-            outputInBytes.push_back(buffer);
-            buffer = 0;
-        }
-        counter = (counter + 1) % 8;
-        buffer <<= 1;
-    }
-    if (counter != 0) {
-        buffer <<= 7 - counter;            //filling with zeros
-        outputInBytes.push_back(buffer);
-    }
-    return outputInBytes;
-}
 
 /////////////////////////////////////////////////////////////////////////// Main
-int main() {
+int main()
+{
+    // Constants
+    int const NUMBER_OF_PARITY_BITS = 4,
+            NUMBER_OF_MESSAGE_BITS = 8;
 
-    vector<vector<bool>> H1 =
-            {
-                    {1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0},
-                    {1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0},
-                    {1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0},
-                    {0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1}
-            };
+    // Code for correcting 1 bit
+    CorrectionMatrix const correctionMatrixOneBit(
+            NUMBER_OF_PARITY_BITS,
+            NUMBER_OF_MESSAGE_BITS + NUMBER_OF_PARITY_BITS,
+            "110110101000"
+            "101101100100"
+            "011100010010"
+            "000011110001"
+    );
+    /*CorrectionMatrix const correctionMatrixTwoBits(
+            NUMBER_OF_PARITY_BITS,
+            NUMBER_OF_MESSAGE_BITS + NUMBER_OF_PARITY_BITS,
+            "01111111 10000000"
+            "10111111 01000000"
+            "11011111 00100000"
+            "11101111 00010000"
+            "11110111 00001000"
+            "11111011 00000100"
+            "11111101 00000010"
+            "11111110 00000001"
+    );*/
 
-    string filename = "";
-    cout << "Enter filename of the file to encode: ";
-    cin >> filename;
-    ifstream file(filename, ios::binary);
-    vector<Byte> bytes;
-    if (!file) {
-        cout << "Wrong file" << endl;
-        return 0;
-    } else {
-        while (file) {
-            auto b = static_cast<Byte>( file.get());
-            if (file)
-                bytes.push_back(b);
-        }
-    }
+    // User dialog
+    std::string inputFilename,
+                outputFilename;
+    char mode;
 
-    vector<Byte> encoded = codeBytes(bytes, H1);
-    string encodedFilename = "encoded-" + filename;
-    ofstream os(encodedFilename, ios::binary);
-    for (Byte b : encoded) {
-        os.put(b);
-        cout << b;
-    }
-    os.close();
+    std::cout << "Enter input filename: ";
+    std::getline(std::cin, inputFilename);
+    std::cout << "Enter output filename: ";
+    std::getline(std::cin, outputFilename);
 
-    file.close();
+    std::cout << "Do you want to [e]ncode or [d]ecode file: ";
+    std::cin >> mode;
+
+    // File operations
+    BinaryFileEncoder binaryFileEncoder;
+
+    if (mode == 'e' || mode == 'E')
+        binaryFileEncoder.encode(inputFilename, outputFilename,
+                correctionMatrixOneBit);
+    else if (mode == 'd' || mode == 'D')
+        binaryFileEncoder.decode(inputFilename, outputFilename,
+                correctionMatrixOneBit);
+
+    // End of program
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
